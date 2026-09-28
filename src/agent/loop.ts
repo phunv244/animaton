@@ -35,7 +35,7 @@ import {
   executeTool,
 } from "./tools.js";
 import { sanitizeInput } from "./injection-defense.js";
-import { getSurvivalTier } from "../conway/credits.js";
+import { getSurvivalTier, isLocalMode, LOCAL_MODE_CREDITS_CENTS } from "../conway/credits.js";
 import { getUsdcBalance } from "../conway/x402.js";
 import {
   claimInboxMessages,
@@ -952,8 +952,8 @@ async function getFinancialState(
   let creditsCents = _lastKnownCredits;
   let usdcBalance = _lastKnownUsdc;
 
-  if (process.env.CONWAY_API_KEY === "local-antigravity" || process.env.OPENAI_API_BASE) {
-    creditsCents = 100000;
+  if (isLocalMode()) {
+    creditsCents = LOCAL_MODE_CREDITS_CENTS;
   } else {
     try {
       creditsCents = await conway.getCreditsBalance();

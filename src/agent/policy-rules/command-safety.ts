@@ -62,6 +62,10 @@ const FORBIDDEN_COMMAND_PATTERNS: { pattern: RegExp; description: string }[] = [
   { pattern: /cat\s+.*\.gnupg/, description: "Read GPG keys" },
   { pattern: /cat\s+.*\.env/, description: "Read environment file" },
   { pattern: /cat\s+.*wallet\.json/, description: "Read wallet file" },
+  // ponytail: regex blacklist, trivially bypassed by obfuscation; real protection is keeping little money in the wallet
+  { pattern: /wallet\.json/i, description: "Access wallet file" },
+  { pattern: /withdraw\.(mjs|ps1)/i, description: "Run withdraw script" },
+  { pattern: /private_?key|seed\s*phrase|mnemonic/i, description: "Access private key material" },
   // Policy engine modification via shell
   { pattern: /sed\s+.*policy-engine/, description: "Modify policy engine via sed" },
   { pattern: /sed\s+.*policy-rules/, description: "Modify policy rules via sed" },

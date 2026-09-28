@@ -3,33 +3,27 @@ Write-Host "==================================================" -ForegroundColor
 Write-Host "    Conway Automaton + Local Antigravity Engine   " -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Cyan
 
-# Set environment variables for Windows compatibility & Local Antigravity Bridge
 $env:HOME = $env:USERPROFILE
-$env:CONWAY_API_KEY = "local-antigravity"
-$env:OPENAI_API_BASE = "http://127.0.0.1:8888"
-$env:OPENAI_BASE_URL = "http://127.0.0.1:8888/v1"
-$env:OPENAI_API_KEY = "sk-antigravity"
 
-# Load Tavily Search API key
-$configPath = "$env:USERPROFILE\.automaton\automaton.json"
-if (Test-Path $configPath) {
-    $cfg = Get-Content $configPath -Raw | ConvertFrom-Json
-    if ($cfg.tavilyApiKey) {
-        $env:TAVILY_API_KEY = $cfg.tavilyApiKey
-    }
+# Load .env (see .env.example). Empty values are skipped.
+$envFile = Join-Path $PSScriptRoot ".env"
+if (-not (Test-Path $envFile)) {
+    Write-Host "Thieu file .env. Copy .env.example thanh .env roi dien key." -ForegroundColor Red
+    exit 1
 }
-if (-not $env:TAVILY_API_KEY) {
-    $env:TAVILY_API_KEY = "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"
+Get-Content $envFile | Where-Object { $_ -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+?)\s*$' } | ForEach-Object {
+    Set-Item "env:$($Matches[1])" $Matches[2]
 }
+$bridgePort = if ($env:BRIDGE_PORT) { [int]$env:BRIDGE_PORT } else { 8888 }
 
-# 1. Start Antigravity Bridge on port 8888 if not already running
-$bridgeRunning = Test-NetConnection -ComputerName 127.0.0.1 -Port 8888 -InformationLevel Quiet -WarningAction SilentlyContinue
+# 1. Start Antigravity Bridge if not already running
+$bridgeRunning = Test-NetConnection -ComputerName 127.0.0.1 -Port $bridgePort -InformationLevel Quiet -WarningAction SilentlyContinue
 if (-not $bridgeRunning) {
-    Write-Host "[1/3] Khoi dong Antigravity Bridge (Port 8888)..." -ForegroundColor Yellow
+    Write-Host "[1/3] Khoi dong Antigravity Bridge (Port $bridgePort)..." -ForegroundColor Yellow
     $bridgeJob = Start-Process python -ArgumentList "antigravity_bridge.py" -WorkingDirectory $PSScriptRoot -PassThru -NoNewWindow
     Start-Sleep -Seconds 2
 } else {
-    Write-Host "[1/3] Antigravity Bridge da hoat dong tren port 8888." -ForegroundColor Green
+    Write-Host "[1/3] Antigravity Bridge da hoat dong tren port $bridgePort." -ForegroundColor Green
 }
 
 # 2. Start Web Dashboard on port 5050 if not already running

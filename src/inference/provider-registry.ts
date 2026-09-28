@@ -72,7 +72,7 @@ const DEFAULT_PROVIDERS: ProviderConfig[] = [
   {
     id: "openai",
     name: "OpenAI",
-    baseUrl: process.env.OPENAI_API_BASE || process.env.OPENAI_BASE_URL || "https://api.openai.com/v1",
+    baseUrl: process.env.OPENAI_BASE_URL || "https://api.openai.com/v1",
     apiKeyEnvVar: "OPENAI_API_KEY",
     models: [
       {

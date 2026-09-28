@@ -15,6 +15,7 @@ import { loadConfig, resolvePath } from "./config.js";
 import { createDatabase } from "./state/database.js";
 import { createConwayClient } from "./conway/client.js";
 import { createInferenceClient } from "./conway/inference.js";
+import { isLocalMode } from "./conway/credits.js";
 import { createHeartbeatDaemon } from "./heartbeat/daemon.js";
 import {
   loadHeartbeatConfig,
@@ -75,6 +76,8 @@ Environment:
   CONWAY_API_URL           Conway API URL (default: https://api.conway.tech)
   CONWAY_API_KEY           Conway API key (overrides config)
   OLLAMA_BASE_URL          Ollama base URL (overrides config, e.g. http://localhost:11434)
+  AUTOMATON_LOCAL_MODE     1 = local inference engine, skip Conway registration/topup/credits
+  INFERENCE_TIMEOUT_MS     Inference request timeout in ms (default: 60000)
 `);
     process.exit(0);
   }
@@ -205,7 +208,7 @@ async function run(): Promise<void> {
     process.env.CONWAY_API_KEY ||
     config.conwayApiKey ||
     loadApiKeyFromConfig() ||
-    (process.env.OPENAI_API_KEY ? "local-antigravity" : null);
+    (isLocalMode() ? "local-antigravity" : null);
   if (!apiKey) {
     logger.error("No API key found. Run: automaton --provision");
     process.exit(1);
@@ -256,7 +259,7 @@ async function run(): Promise<void> {
 
   // Register automaton identity (one-time, immutable)
   const registrationState = db.getIdentity("conwayRegistrationStatus");
-  if (apiKey === "local-antigravity") {
+  if (isLocalMode()) {
     if (!registrationState) {
       db.setIdentity("conwayRegistrationStatus", "registered");
       logger.info(`[${new Date().toISOString()}] Local Antigravity mode: cloud registration skipped.`);
@@ -354,7 +357,7 @@ async function run(): Promise<void> {
 
   // Bootstrap topup: buy minimum credits ($5) from USDC so the agent can start.
   // The agent decides larger topups itself via the topup_credits tool.
-  if (apiKey !== "local-antigravity") {
+  if (!isLocalMode()) {
     try {
       let bootstrapTimer: ReturnType<typeof setTimeout>;
       const bootstrapTimeout = new Promise<null>((_, reject) => {

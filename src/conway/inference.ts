@@ -16,7 +16,7 @@ import type {
 } from "../types.js";
 import { ResilientHttpClient } from "./http-client.js";
 
-const INFERENCE_TIMEOUT_MS = 60_000;
+const INFERENCE_TIMEOUT_MS = Number(process.env.INFERENCE_TIMEOUT_MS) || 60_000;
 
 interface InferenceClientOptions {
   apiUrl: string;
@@ -54,7 +54,6 @@ export function createInferenceClient(
     retryableStatuses: [429, 500, 502, 503, 504],
     allowHttpOnLoopback:
       isLoopbackHttpUrl(ollamaBaseUrl) ||
-      isLoopbackHttpUrl(process.env.OPENAI_API_BASE) ||
       isLoopbackHttpUrl(process.env.OPENAI_BASE_URL),
   });
   let currentModel = options.defaultModel;
@@ -113,7 +112,7 @@ export function createInferenceClient(
       });
     }
 
-    const rawOpenAiUrl = (process.env.OPENAI_API_BASE || process.env.OPENAI_BASE_URL || "https://api.openai.com").replace(/\/v1\/?$/, "");
+    const rawOpenAiUrl = (process.env.OPENAI_BASE_URL || "https://api.openai.com").replace(/\/v1\/?$/, "");
     const openAiLikeApiUrl =
       backend === "openai" ? rawOpenAiUrl :
       backend === "ollama" ? (ollamaBaseUrl as string).replace(/\/$/, "") :

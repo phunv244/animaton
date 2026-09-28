@@ -13,6 +13,17 @@ import type {
 import { SURVIVAL_THRESHOLDS } from "../types.js";
 
 /**
+ * Local mode (AUTOMATON_LOCAL_MODE=1): inference runs on a local engine
+ * (e.g. Antigravity bridge), so Conway cloud registration, topup and credit
+ * checks are skipped and credits are reported as LOCAL_MODE_CREDITS_CENTS.
+ */
+export const LOCAL_MODE_CREDITS_CENTS = 100_000;
+
+export function isLocalMode(): boolean {
+  return process.env.AUTOMATON_LOCAL_MODE === "1";
+}
+
+/**
  * Check the current financial state of the automaton.
  */
 export async function checkFinancialState(

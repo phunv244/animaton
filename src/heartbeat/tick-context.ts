@@ -13,7 +13,7 @@ import type {
   HeartbeatConfig,
   TickContext,
 } from "../types.js";
-import { getSurvivalTier } from "../conway/credits.js";
+import { getSurvivalTier, isLocalMode, LOCAL_MODE_CREDITS_CENTS } from "../conway/credits.js";
 import { getUsdcBalance } from "../conway/x402.js";
 import { createLogger } from "../observability/logger.js";
 
@@ -49,8 +49,8 @@ export async function buildTickContext(
 
   // Fetch balances ONCE
   let creditBalance = 0;
-  if (process.env.CONWAY_API_KEY === "local-antigravity" || process.env.OPENAI_API_BASE) {
-    creditBalance = 100000; // Local Antigravity engine provides free compute ($1000 equivalent)
+  if (isLocalMode()) {
+    creditBalance = LOCAL_MODE_CREDITS_CENTS;
   } else {
     try {
       creditBalance = await conway.getCreditsBalance();
